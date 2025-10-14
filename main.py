@@ -23,10 +23,13 @@ class Game:
     def draw_grid(self):
         for r in range(self.rows):
             for c in range(self.cols):
+                value = self.grid[r][c]
+                color = (255, 255, 255) if value == 1 else (0, 0, 0)
                 rect = pygame.Rect(c * self.cell_size, r *
                                    self.cell_size, self.cell_size, self.cell_size)
-
-                pygame.draw.rect(self.screen, (255, 255, 255), rect, 1)
+                pygame.draw.rect(self.screen, color, rect)
+                pygame.draw.rect(self.screen, (200, 200, 200),
+                                 rect, 1)  # light gray outline
 
     def run(self):
         """Main loop."""
