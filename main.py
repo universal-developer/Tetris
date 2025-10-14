@@ -15,7 +15,7 @@ class Game:
         pygame.display.set_caption("Grid of 0 and 1")
 
         # generate checkerboard grid
-        self.grid = [[0 for r in range(rows)] for c in range(cols)]
+        self.grid = [[0 for c in range(cols)] for r in range(rows)]
         print(self.grid)
 
         self.running = True
