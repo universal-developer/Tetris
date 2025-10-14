@@ -21,13 +21,13 @@ class Forme:
             self.pos_x+=1
 
 class Game:
-    def __init__(self, rows=10, cols=10, cell_size=40):
+    def __init__(self, rows=20, cols=10, cell_size=30):
         pygame.init()
         self.rows = rows
         self.cols = cols
         self.cell_size = cell_size
-        self.width = cols * cell_size
-        self.height = rows * cell_size
+        self.width = cols * cell_size + 40
+        self.height = rows * cell_size + 80
 
         # set up window
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -44,8 +44,8 @@ class Game:
             for c in range(self.cols):
                 value = self.grid[r][c]
                 color = (255, 255, 255) if value == 1 else (0, 0, 0)
-                rect = pygame.Rect(c * self.cell_size, r *
-                                   self.cell_size, self.cell_size, self.cell_size)
+                rect = pygame.Rect(c * self.cell_size + 20, r *
+                                   self.cell_size + 60, self.cell_size, self.cell_size)
                 pygame.draw.rect(self.screen, color, rect)
                 pygame.draw.rect(self.screen, (200, 200, 200),
                                  rect, 1)  # light gray outline
