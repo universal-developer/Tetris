@@ -1,4 +1,5 @@
 import pygame
+import random
 
 
 forme_possible=[["forme1"],["forme2"],["forme3"]]
@@ -56,10 +57,11 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                if event.key == pygame.K_LEFT:
-                    self.Forme.gauche()
-                if event.key == pygame.K_RIGHT:
-                    self.Forme.droit
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        self.Forme.gauche()
+                    if event.key == pygame.K_RIGHT:
+                        self.Forme.droit
 
             self.screen.fill((0, 0, 0))
             self.draw_grid()
