@@ -1,80 +1,47 @@
 import pygame
 
-BLACK = (0, 0, 0)
-WHITE = (200, 200, 200)
-WINDOW_HEIGHT = 400
-WINDOW_WIDTH = 400
-COLS = 10
-ROWS = 20
-CELL_SIZE = 40
-GAME_WIDTH, GAME_HEIGHT = COLS * CELL_SIZE, ROWS * CELL_SIZE
-
-
-# --- constants ---
-BLACK = (0, 0, 0)
-WHITE = (200, 200, 200)
-
-COLS = 10
-ROWS = 20
-CELL_SIZE = 40
-GAME_WIDTH, GAME_HEIGHT = COLS * CELL_SIZE, ROWS * CELL_SIZE
-
-# --- game class ---
-
 
 class Game:
-    def __init__(self):
-        self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
-        self.display_surface = pygame.display.get_surface()
+    def __init__(self, rows=10, cols=10, cell_size=40):
+        pygame.init()
+        self.rows = rows
+        self.cols = cols
+        self.cell_size = cell_size
+        self.width = cols * cell_size
+        self.height = rows * cell_size
+
+        # set up window
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption("Grid of 0 and 1")
+
+        # generate checkerboard grid
+        self.grid = [[0 for r in range(rows)] for c in range(cols)]
+        print(self.grid)
+
+        self.running = True
 
     def draw_grid(self):
-        # vertical lines
-        for col in range(COLS + 1):
-            pygame.draw.line(
-                self.surface,
-                BLACK,
-                (col * CELL_SIZE, 0),
-                (col * CELL_SIZE, GAME_HEIGHT),
-                1
-            )
+        for r in range(self.rows):
+            for c in range(self.cols):
+                rect = pygame.Rect(c * self.cell_size, r *
+                                   self.cell_size, self.cell_size, self.cell_size)
 
-        # horizontal lines
-        for row in range(ROWS + 1):
-            pygame.draw.line(
-                self.surface,
-                BLACK,
-                (0, row * CELL_SIZE),
-                (GAME_WIDTH, row * CELL_SIZE),
-                1
-            )
+                pygame.draw.rect(self.screen, (255, 255, 255), rect, 1)
 
     def run(self):
-        self.surface.fill(WHITE)
-        self.draw_grid()
-        self.display_surface.blit(self.surface, (0, 0))
+        """Main loop."""
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
 
+            self.screen.fill((0, 0, 0))
+            self.draw_grid()
+            pygame.display.flip()
 
-# --- main loop ---
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
-    pygame.display.set_caption("Grid Example")
-
-    clock = pygame.time.Clock()
-    game = Game()
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        game.run()
-        pygame.display.flip()
-        clock.tick(60)
-
-    pygame.quit()
+        pygame.quit()
 
 
 if __name__ == "__main__":
-    main()
+    game = Game()
+    game.run()
