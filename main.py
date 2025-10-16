@@ -41,6 +41,7 @@ class Figure:
         # Create the rotated shape
         new_shape = [(largeur-cy+, cx) for cx, cy in self.shape]  
         self.shape = new_shape
+        self.longueur, self.largeur= self.largeur, self.longueur
         
     def down(self):
         self.pos_y += 1  # move shape one row down
