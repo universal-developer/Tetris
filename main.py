@@ -4,7 +4,7 @@ import random
 # --- Shapes: defined by local (x, y) tile coordinates ---
 # Each shape is a list of 4 tuples relative to its own top-left corner
 shapes = [
-    [(0, 0), (1, 0), (2, 0), (3, 0)],           # I
+    [(0, 1), (1, 1), (2, 1), (3, 1)],           # I
     [(0, 0), (1, 0), (0, 1), (1, 1)],           # O
     [(0, 0), (1, 0), (2, 0), (2, 1)],           # L
     [(0, 0), (1, 0), (2, 0), (0, 1)],           # J
@@ -39,7 +39,7 @@ class Figure:
     # --- Movement controls ---
     def rotate(self, board):
         # Create the rotated shape
-        new_shape = [(-cy+, cx) for cx, cy in self.shape]  
+        new_shape = [(largeur-cy+, cx) for cx, cy in self.shape]  
         self.shape = new_shape
         
     def down(self):
