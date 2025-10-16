@@ -2,24 +2,26 @@ import pygame
 import random
 
 
-forme_possible=[["forme1"],["forme2"],["forme3"]]
+forme_possible = [["forme1"], ["forme2"], ["forme3"]]
 
-class Forme:
+
+class Figure:
     def __init__(self):
         self.pos_x = 5
         self.pos_y = 0
-        self.forme=random.choice(forme_possible)
-        
-    def decendre(self):
-        self.pos_y+=1
-    
-    def gauche(self):
-        if self.pos_x>0:
-            self.pos_x-=1
-    
-    def droit(self):
-        if self.pos_x<10:
-            self.pos_x+=1
+        self.forme = random.choice(forme_possible)
+
+    def dowm(self):
+        self.pos_y += 1
+
+    def left(self):
+        if self.pos_x > 0:
+            self.pos_x -= 1
+
+    def right(self):
+        if self.pos_x < 10:
+            self.pos_x += 1
+
 
 class Game:
     def __init__(self, rows=20, cols=10, cell_size=30):
