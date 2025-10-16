@@ -2,14 +2,14 @@ import pygame
 import random
 
 
-forme_possible = [["forme1"], ["forme2"], ["forme3"]]
+shapes_possible = [["shape1"], ["shape2"], ["shape3"]]
 
 
 class Figure:
     def __init__(self):
         self.pos_x = 5
         self.pos_y = 0
-        self.forme = random.choice(forme_possible)
+        self.forme = random.choice(shapes_possible)
 
     def dowm(self):
         self.pos_y += 1
