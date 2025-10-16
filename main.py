@@ -39,7 +39,7 @@ class Figure:
     # --- Movement controls ---
     def rotate(self, board):
         # Create the rotated shape
-        new_shape = [(-cy+(self.longueur//2), cx-(self.largeur//2)) for cx, cy in self.shape]  
+        new_shape = [(-cy+, cx) for cx, cy in self.shape]  
         self.shape = new_shape
         
     def down(self):
@@ -50,7 +50,7 @@ class Figure:
             self.pos_x -= 1  # move one column left (if not at wall)
 
     def right(self, cols):
-        if self.pos_x < cols - 4:  # quick bound check, prevents going off right side
+        if self.pos_x < cols - self.largeur -1:  # quick bound check, prevents going off right side
             self.pos_x += 1
 
 
