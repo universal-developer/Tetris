@@ -21,6 +21,8 @@ class Figure:
         self.pos_x = 3        # start near the middle of the grid
         self.pos_y = 0        # start at top row
         self.shape = random.choice(shapes)  # randomly pick one of the 7 shapes
+        self.largeur=max(self.shape, key=lambda x: x[0])[0]
+        self.longueur=max(self.shape, key=lambda x: x[1])[1]
 
     def draw(self, board, value=1):
         """Draw (value=1) or erase (value=0) the figure on the main grid."""
@@ -35,6 +37,11 @@ class Figure:
                 board[y][x] = value  # mark cell as filled (1) or empty (0)
 
     # --- Movement controls ---
+    def rotate(self, board):
+        # Create the rotated shape
+        new_shape = [(-cy+(self.longueur//2), cx-(self.largeur//2)) for cx, cy in self.shape]  
+        self.shape = new_shape
+        
     def down(self):
         self.pos_y += 1  # move shape one row down
 
