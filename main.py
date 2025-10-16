@@ -106,6 +106,8 @@ class Game:
                         self.figure.right(self.cols)
                     elif event.key == pygame.K_DOWN:
                         self.figure.down()
+                    elif event.key == pygame.K_UP:
+                        self.figure.rotate(self.grid)
 
             # --- Update logic ---
             # Reset grid to empty before redrawing the figure
