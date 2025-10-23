@@ -4,7 +4,7 @@ import random
 # --- Shapes: defined by local (x, y) tile coordinates ---
 # Each shape is a list of 4 tuples relative to its own top-left corner
 shapes = [
-    [(0, 1), (1, 1), (2, 1), (3, 1)],           # I
+    [(0, 0), (1, 0), (2, 0), (3, 0)],           # I
     [(0, 0), (1, 0), (0, 1), (1, 1)],           # O
     [(0, 0), (1, 0), (2, 0), (2, 1)],           # L
     [(0, 0), (1, 0), (2, 0), (0, 1)],           # J
@@ -21,8 +21,6 @@ class Figure:
         self.pos_x = 3        # start near the middle of the grid
         self.pos_y = 0        # start at top row
         self.shape = random.choice(shapes)  # randomly pick one of the 7 shapes
-        self.largeur=max(self.shape, key=lambda x: x[0])[0]
-        self.longueur=max(self.shape, key=lambda x: x[1])[1]
 
     def draw(self, board, value=1):
         """Draw (value=1) or erase (value=0) the figure on the main grid."""
@@ -37,12 +35,6 @@ class Figure:
                 board[y][x] = value  # mark cell as filled (1) or empty (0)
 
     # --- Movement controls ---
-    def rotate(self, board):
-        # Create the rotated shape
-        new_shape = [(largeur-cy+, cx) for cx, cy in self.shape]  
-        self.shape = new_shape
-        self.longueur, self.largeur= self.largeur, self.longueur
-        
     def down(self):
         self.pos_y += 1  # move shape one row down
 
@@ -51,7 +43,7 @@ class Figure:
             self.pos_x -= 1  # move one column left (if not at wall)
 
     def right(self, cols):
-        if self.pos_x < cols - self.largeur -1:  # quick bound check, prevents going off right side
+        if self.pos_x < cols - 4:  # quick bound check, prevents going off right side
             self.pos_x += 1
 
 
@@ -129,8 +121,6 @@ class Game:
                         self.figure.right(self.cols)
                     elif event.key == pygame.K_DOWN:
                         self.figure.down()
-                    elif event.key == pygame.K_UP:
-                        self.figure.rotate(self.grid)
 
             # --- Gravity logic ---
             self.fall_time += clock.get_time()
