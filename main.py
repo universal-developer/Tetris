@@ -31,7 +31,7 @@ class Figure:
             x = self.pos_x + cx
             y = self.pos_y + cy
 
-            print(x, y)  # debug: print coordinates of each tile
+            # print(x, y)  # debug: print coordinates of each tile
             # Only draw inside valid grid boundaries
             if 0 <= x < len(board[0]) and 0 <= y < len(board):
                 board[y][x] = value  # mark cell as filled (1) or empty (0)
@@ -65,6 +65,9 @@ class Game:
         self.width = cols * cell_size + 40
         self.height = rows * cell_size + 80
 
+        self.fall_time = 0
+        self.fall_speed = 500  # milliseconds per step
+
         # Pygame window setup
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tetris grid")
@@ -91,8 +94,27 @@ class Game:
                 # draw light-gray border for grid visibility
                 pygame.draw.rect(self.screen, (200, 200, 200), rect, 1)
 
+    def gravity(self):
+        self.move_y += 3.2
+        pass
+
+    def collision(self, shape, pos_x, pos_y):
+        for cx, cy in shape:
+            x = pos_x + cx
+            y = pos_y + cy
+
+            if y >= self.rows or self.grid[y][x] == 1:
+                return True
+
+    def lock_piece(self):
+        """When a piece lands, mark its tiles as filled in the grid."""
+        for cx, cy in self.figure.shape:
+            x = self.figure.pos_x + cx
+            y = self.figure.pos_y + cy
+            if 0 <= x < self.cols and 0 <= y < self.rows:
+                self.grid[y][x] = 1
+
     def run(self):
-        """Main game loop: handles events, updates grid, redraws everything."""
         clock = pygame.time.Clock()
 
         while self.running:
@@ -110,17 +132,28 @@ class Game:
                     elif event.key == pygame.K_UP:
                         self.figure.rotate(self.grid)
 
-            # --- Update logic ---
-            # Reset grid to empty before redrawing the figure
+            # --- Gravity logic ---
+            self.fall_time += clock.get_time()
+            if self.fall_time >= self.fall_speed:
+                self.fall_time = 0
+                if not self.collision(self.figure.shape, self.figure.pos_x, self.figure.pos_y + 1):
+                    self.figure.pos_y += 1
+                else:
+                    self.lock_piece()
+                    self.figure = Figure()
+
+            # --- Clear + redraw grid each frame ---
             self.grid = [[0 for _ in range(self.cols)]
                          for _ in range(self.rows)]
             self.figure.draw(self.grid, value=1)
 
             # --- Drawing ---
-            self.screen.fill((0, 0, 0))  # clear background
-            self.draw_grid()             # draw the new grid state
-            pygame.display.flip()        # update screen
-            clock.tick(30)               # limit FPS
+            self.screen.fill((0, 0, 0))
+            self.draw_grid()
+            pygame.display.flip()
+
+            # --- Limit FPS ---
+            clock.tick(30)
 
         pygame.quit()
 
