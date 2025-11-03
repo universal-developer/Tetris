@@ -65,6 +65,16 @@ class Game:
                 )
                 pygame.draw.rect(self.screen, color, rect)
                 pygame.draw.rect(self.screen, (100, 100, 100), rect, 1)
+                
+    def draw_grid_overlay(self, grid):
+        for r in range(self.rows):
+            for c in range(self.cols):
+                value = grid[r][c]
+                color = (255, 255, 255) if value else (0, 0, 0)
+                rect = pygame.Rect(c * self.cell_size + 20, r * self.cell_size + 60, self.cell_size, self.cell_size)
+                pygame.draw.rect(self.screen, color, rect)
+                pygame.draw.rect(self.screen, (100, 100, 100), rect, 1)
+
 
     def lock_figure(self):
         for cx, cy in self.figure.shape: 
@@ -104,11 +114,14 @@ class Game:
                                 break
 
             # --- Draw everything ---
-            self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
-            self.figure.draw(self.grid)
+            #self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
+            #self.figure.draw(self.grid)
+            
+            temp_grid = [row[:] for row in self.grid]
+            self.figure.draw(temp_grid)                # draw active figure on top
 
-            self.screen.fill((0, 0, 0))
-            self.draw_grid()
+            #self.screen.fill((0, 0, 0))
+            self.draw_grid_overlay(temp_grid)
             pygame.display.flip()
             clock.tick(30)
 
