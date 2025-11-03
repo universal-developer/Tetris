@@ -16,6 +16,8 @@ shapes = [
 class Figure:
     def __init__(self):
         self.shape = random.choice(shapes)
+        self.largeur=max(self.shape, key=lambda x: x[0])[0]
+        self.longueur=max(self.shape, key=lambda x: x[1])[1]
         self.pos_x = 3
         self.pos_y = 0
 
