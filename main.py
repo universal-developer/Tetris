@@ -37,12 +37,14 @@ class Figure:
     def down(self):
         self.pos_y += 1
 
-    def rotation(self):
+    def rotation_test(self):
         # Create the rotated shape
         new_shape = [(-cy+1, cx) for cx, cy in self.shape]  
+        return new_shape
+        
+    def rotation_valide(self,new_shape):
         self.shape = new_shape
         self.longueur, self.largeur= self.largeur, self.longueur
-
 
 class Game:
     def __init__(self, rows=20, cols=10, cell_size=30):
@@ -119,7 +121,16 @@ class Game:
                             self.figure.left()
                             
                     elif event.key == pygame.K_UP:
-                        self.figure.rotation()
+                        nv_shape=self.figure.rotation_test()
+                        can_move = True
+                        for cx, cy in nv_shape:
+                            x = self.figure.pos_x + cx  # Last col of the grid
+                            y = self.figure.pos_y + cy
+                            if x<0 or x >= self.cols or self.grid[y][x] == 1:
+                                can_move = False
+                                break
+                        if can_move:
+                            self.figure.rotation_valide(nv_shape)
 
                     elif event.key == pygame.K_RIGHT:
                         # Make sure the figure doesn't leave the grid
