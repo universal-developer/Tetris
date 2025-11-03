@@ -99,24 +99,51 @@ class Game:
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.figure.left()
-                    elif event.key == pygame.K_RIGHT:
-                        self.figure.right()
-                    elif event.key == pygame.K_DOWN:
-                        self.figure.down()
+                        # Make sure the figure doesn't leave the grid
+                        can_move = True
+                        for cx, cy in self.figure.shape:
+                            x = self.figure.pos_x + cx - 1 # First col of the grid
+                            y = self.figure.pos_y + cy
+                            if x < 0 or self.grid[y][x] == 1:
+                                can_move = False
+                                break
+                        if can_move:
+                            self.figure.left()
 
-                        # Check bottom collision
+                    elif event.key == pygame.K_RIGHT:
+                        # Make sure the figure doesn't leave the grid
+                        can_move = True
+                        for cx, cy in self.figure.shape:
+                            x = self.figure.pos_x + cx + 1 # Last col of the grid
+                            y = self.figure.pos_y + cy
+                            if x >= self.cols or self.grid[y][x] == 1:
+                                can_move = False
+                                break
+                        if can_move:
+                            self.figure.right()
+
+                    elif event.key == pygame.K_DOWN:
+                        
+                        # Collision implimented
+                        self.figure.pos_y += 1
+                        
+                        collision = False
+                        
                         for cx, cy in self.figure.shape:
                             x = self.figure.pos_x + cx
                             y = self.figure.pos_y + cy
-                            if y >= self.rows - 1:
-                                self.lock_figure()
+                            
+                            if y >= self.rows: # check whether we have reached the bottom of the grid
+                                collission = True
                                 break
-
-            # --- Draw everything ---
-            #self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
-            #self.figure.draw(self.grid)
-            
+                            
+                            if y + 1 >= self.rows or (y + 1 < self.rows and self.grid[y + 1][x] == 1): # compare to 
+                                collision = True
+                                break
+                            
+                        if collision: 
+                            self.lock_figure() 
+        
             temp_grid = [row[:] for row in self.grid]
             self.figure.draw(temp_grid)                # draw active figure on top
 
