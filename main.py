@@ -101,20 +101,32 @@ class Game:
             dt = clock.tick(30)
             fall_time += dt
 
+            if down == True:
+                # Try moving down
+                if self.can_move(0, 1):
+                    self.figure.down()
+                else:
+                    # can't move down → lock piece
+                    self.lock_figure()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
 
+                elif event.type == pygame.KEYUP :
+                    if down == True:
+                        down = False
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT and self.can_move(-1, 0):
                         self.figure.move_left()
+                        
                     elif event.key == pygame.K_RIGHT and self.can_move(1, 0):
                         self.figure.move_right()
+                        
                     elif event.key == pygame.K_DOWN:
-                        if self.can_move(0, 1):
-                            self.figure.move_down()
-                        else:
-                            self.lock_figure()
+                         down = True
+                        
                     elif event.key == pygame.K_UP:
                         new_shape = self.figure.rotated_shape()
                         can_rotate = True
