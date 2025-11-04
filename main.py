@@ -21,7 +21,7 @@ class Figure:
         self.pos_x = 3
         self.pos_y = 0
 
-    def draw(self, board, value=1):
+    def draw(self, board, value = 1):
         for cx, cy in self.shape:
             x = self.pos_x + cx
             y = self.pos_y + cy
@@ -84,6 +84,7 @@ class Game:
                 rect = pygame.Rect(c * self.cell_size + 20, r * self.cell_size + 60, self.cell_size, self.cell_size)
                 pygame.draw.rect(self.screen, color, rect)
                 pygame.draw.rect(self.screen, (100, 100, 100), rect, 1)
+                
 
 
     def lock_figure(self):
@@ -97,81 +98,77 @@ class Game:
                 self.grid[y][x] = 1
                 
         self.figure = Figure() # Spawn a new figure
-            
+                
+    def can_move(self, dx, dy):
+        for cx, cy in self.figure.shape:
+            x = self.figure.pos_x + cx + dx
+            y = self.figure.pos_y + cy + dy
+            if x < 0 or x >= self.cols or y < 0 or y >= self.rows or self.grid[y][x] == 1:
+                return False
+        return True
 
     def run(self):
         clock = pygame.time.Clock()
+        fall_time = 0
+        fall_speed = 300  # milliseconds per step
 
         while self.running:
+            dt = clock.tick(30)  # milliseconds since last frame
+            fall_time += dt
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
 
                 elif event.type == pygame.KEYDOWN:
+                    # --- Move Left ---
                     if event.key == pygame.K_LEFT:
-                        # Make sure the figure doesn't leave the grid
-                        can_move = True
-                        for cx, cy in self.figure.shape:
-                            x = self.figure.pos_x + cx - 1 # First col of the grid
-                            y = self.figure.pos_y + cy
-                            if x < 0 or self.grid[y][x] == 1:
-                                can_move = False
-                                break
-                        if can_move:
+                        if self.can_move(-1, 0):
                             self.figure.left()
-                            
-                    elif event.key == pygame.K_UP:
-                        nv_shape=self.figure.rotation_test()
-                        can_move = True
-                        for cx, cy in nv_shape:
-                            x = self.figure.pos_x + cx  # Last col of the grid
-                            y = self.figure.pos_y + cy
-                            if x<0 or x >= self.cols or self.grid[y][x] == 1:
-                                can_move = False
-                                break
-                        if can_move:
-                            self.figure.rotation_valid(nv_shape)
 
+                    # --- Move Right ---
                     elif event.key == pygame.K_RIGHT:
-                        # Make sure the figure doesn't leave the grid
-                        can_move = True
-                        for cx, cy in self.figure.shape:
-                            x = self.figure.pos_x + cx + 1 # Last col of the grid
-                            y = self.figure.pos_y + cy
-                            if x >= self.cols or self.grid[y][x] == 1:
-                                can_move = False
-                                break
-                        if can_move:
+                        if self.can_move(1, 0):
                             self.figure.right()
 
+                    # --- Move Down ---
                     elif event.key == pygame.K_DOWN:
-                        
-                        # Collision implimented
-                        self.figure.pos_y += 1
-                        
-                        collision = False
-                        
-                        for cx, cy in self.figure.shape:
+                        # Try moving down
+                        if self.can_move(0, 1):
+                            self.figure.down()
+                        else:
+                            # can't move down → lock piece
+                            self.lock_figure()
+
+                    # --- Rotate (Up) ---
+                    elif event.key == pygame.K_UP:
+                        new_shape = self.figure.rotation_test()
+                        can_rotate = True
+                        for cx, cy in new_shape:
                             x = self.figure.pos_x + cx
                             y = self.figure.pos_y + cy
-                            
-                            if y + 1 >= self.rows or (y + 1 < self.rows and self.grid[y + 1][x] == 1): # compare to 
-                                collision = True
+                            if x < 0 or x >= self.cols or y < 0 or y >= self.rows or self.grid[y][x] == 1:
+                                can_rotate = False
                                 break
+                        if can_rotate:
+                            self.figure.rotation_valid(new_shape)
                             
-                        if collision: 
-                            self.lock_figure() 
-        
-            temp_grid = [row[:] for row in self.grid]
-            self.figure.draw(temp_grid)                # draw active figure on top
+            
+            if fall_time > fall_speed:
+                fall_time = 0
+                if self.can_move(0, 1):
+                    self.figure.down()
+                if not self.can_move(0, 1):
+                    self.lock_figure()
 
-            #self.screen.fill((0, 0, 0))
+            # --- Draw everything ---
+            temp_grid = [row[:] for row in self.grid]
+            self.figure.draw(temp_grid)
             self.draw_grid_overlay(temp_grid)
             pygame.display.flip()
             clock.tick(30)
 
         pygame.quit()
-
 
 if __name__ == "__main__":
     Game().run()
