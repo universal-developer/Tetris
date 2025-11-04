@@ -96,6 +96,7 @@ class Game:
         clock = pygame.time.Clock()
         fall_time = 0
         fall_speed = 300  # milliseconds per step
+        down=False
 
         while self.running:
             dt = clock.tick(30)
