@@ -39,12 +39,12 @@ class Figure:
 
     def rotation_test(self):
         # Create the rotated shape
-        new_shape = [(-cy+1, cx) for cx, cy in self.shape]  
+        new_shape = [(-cy + 1, cx) for cx, cy in self.shape]  
         return new_shape
         
-    def rotation_valide(self,new_shape):
+    def rotation_valid(self, new_shape):
         self.shape = new_shape
-        self.longueur, self.largeur= self.largeur, self.longueur
+        self.longueur, self.largeur = self.largeur, self.longueur
 
 class Game:
     def __init__(self, rows=20, cols=10, cell_size=30):
