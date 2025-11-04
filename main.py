@@ -91,43 +91,45 @@ class Game:
             if px < 0 or px >= self.cols or py < 0 or py >= self.rows or self.grid[py][px] == 1:
                 return False
         return True
+    
+    def clear_full_rows(self):
+        new_grid = []
+        lines_cleared = 0
+        
+        for row in self.grid:
+            if any(cell == 0 for cell in row):
+                new_grid.append(row)
+            else: 
+                lines_cleared += 1
+                
+        for _ in range(lines_cleared):
+            new_grid.insert(0, [0 for _ in range(self.cols)])
+
+        self.grid = new_grid
 
     def run(self):
         clock = pygame.time.Clock()
         fall_time = 0
         fall_speed = 300  # milliseconds per step
-        down=False
 
         while self.running:
             dt = clock.tick(30)
             fall_time += dt
 
-            if down == True:
-                # Try moving down
-                if self.can_move(0, 1):
-                    self.figure.move_down()
-                else:
-                    # can't move down → lock piece
-                    self.lock_figure()
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
 
-                elif event.type == pygame.KEYUP :
-                    if down == True:
-                        down = False
-
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT and self.can_move(-1, 0):
                         self.figure.move_left()
-                        
                     elif event.key == pygame.K_RIGHT and self.can_move(1, 0):
                         self.figure.move_right()
-                        
                     elif event.key == pygame.K_DOWN:
-                         down = True
-                        
+                        if self.can_move(0, 1):
+                            self.figure.move_down()
+                        else:
+                            self.lock_figure()
                     elif event.key == pygame.K_UP:
                         new_shape = self.figure.rotated_shape()
                         can_rotate = True
@@ -144,8 +146,10 @@ class Game:
                 fall_time = 0
                 if self.can_move(0, 1):
                     self.figure.move_down()
-                elif not self.can_move(0, 1):
+                else:
                     self.lock_figure()
+                    self.clear_full_rows()
+
 
             temp_grid = [row[:] for row in self.grid]
             self.figure.draw(temp_grid)
