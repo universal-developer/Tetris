@@ -105,7 +105,7 @@ class Game:
             if down == True:
                 # Try moving down
                 if self.can_move(0, 1):
-                    self.figure.down()
+                    self.figure.move_down()
                 else:
                     # can't move down → lock piece
                     self.lock_figure()
