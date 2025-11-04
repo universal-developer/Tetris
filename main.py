@@ -42,7 +42,7 @@ class Figure:
         new_shape = [(-cy + 1, cx) for cx, cy in self.shape]  
         return new_shape
         
-    def rotation_valid(self, new_shape):
+    def rotation_valide(self, new_shape):
         self.shape = new_shape
         self.longueur, self.largeur = self.largeur, self.longueur
 
