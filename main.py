@@ -155,10 +155,6 @@ class Game:
                             x = self.figure.pos_x + cx
                             y = self.figure.pos_y + cy
                             
-                            if y >= self.rows: # check whether we have reached the bottom of the grid
-                                collission = True
-                                break
-                            
                             if y + 1 >= self.rows or (y + 1 < self.rows and self.grid[y + 1][x] == 1): # compare to 
                                 collision = True
                                 break
