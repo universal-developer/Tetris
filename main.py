@@ -46,10 +46,8 @@ class Figure:
     def rotated_shape(self):
         # Generate a new rotated version of the shape (90° clockwise)
         if self.width >= 2 or self.height >=2:
-            print("b",self.width)
             return [(1-cy, cx-1) for cx, cy in self.shape ]
         else:
-            print("a")
             return self.shape
         
 
