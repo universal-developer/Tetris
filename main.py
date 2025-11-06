@@ -38,9 +38,8 @@ class Figure:
         self.y += 1
 
     def rotated_shape(self):
-        # Generate a new rotated version of the shape (90° clockwise)
-        if self.width >= 2 or self.height >=2:
-            return [(1-cy, cx-1) for cx, cy in self.shape ]
+        if self.width >= 2 or self.height >= 2:
+            return [(1 - cy, cx - 1) for cx, cy in self.shape]
         else:
             return self.shape
 
@@ -61,10 +60,21 @@ class Game:
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tetris – manual movement + lock test")
 
-        self.grid = [[0 for _ in range(cols)] for _ in range(rows)]
+        self.clock = pygame.time.Clock()
+
+        self.reset_game()
+
+    def reset_game(self):
+        #restart all the game
+        self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
         self.figure = Figure()
         self.running = True
         self.down = False
+        self.game_over = False
+
+        font = pygame.font.SysFont("arial", 30)
+        self.button_text = font.render("Rejouer", True, (255, 255, 255))
+        self.button_rect = self.button_text.get_rect(center=(self.width // 2, self.height // 2 + 60))
 
     def draw_grid(self, grid):
         for r in range(self.rows):
@@ -80,13 +90,36 @@ class Game:
                 pygame.draw.rect(self.screen, color, rect)
                 pygame.draw.rect(self.screen, (100, 100, 100), rect, 1)
 
+        #print "gamme over" + button "rejouer"
+        if self.game_over:
+            font = pygame.font.SysFont("arial", 40)
+            text = font.render("GAME OVER", True, (255, 0, 0))
+            rect = text.get_rect(center=(self.width // 2, self.height // 2))
+            self.screen.blit(text, rect)
+
+            pygame.draw.rect(self.screen, (100, 100, 100), self.button_rect.inflate(40, 20))
+            pygame.draw.rect(self.screen, (255, 255, 255), self.button_rect.inflate(40, 20), 2)
+            self.screen.blit(self.button_text, self.button_rect)
+
     def lock_figure(self):
         for cx, cy in self.figure.shape:
             px = self.figure.x + cx
             py = self.figure.y + cy
             if 0 <= px < self.cols and 0 <= py < self.rows:
                 self.grid[py][px] = 1
-        self.figure = Figure()
+
+        # New figure
+        new_figure = Figure()
+
+        # if colision at the start = game over
+        for cx, cy in new_figure.shape:
+            px = new_figure.x + cx
+            py = new_figure.y + cy
+            if self.grid[py][px] == 1:
+                self.game_over = True
+                return
+
+        self.figure = new_figure
 
     def can_move(self, dx, dy):
         for cx, cy in self.figure.shape:
@@ -95,58 +128,50 @@ class Game:
             if px < 0 or px >= self.cols or py < 0 or py >= self.rows or self.grid[py][px] == 1:
                 return False
         return True
-    
+
     def clear_full_rows(self):
         new_grid = []
         lines_cleared = 0
-        
         for row in self.grid:
             if any(cell == 0 for cell in row):
                 new_grid.append(row)
-            else: 
+            else:
                 lines_cleared += 1
-                
+
         for _ in range(lines_cleared):
             new_grid.insert(0, [0 for _ in range(self.cols)])
 
         self.grid = new_grid
 
     def run(self):
-        clock = pygame.time.Clock()
         fall_time = 0
-        fall_speed = 300  # milliseconds per step
+        fall_speed = 300
 
         while self.running:
-            dt = clock.tick(30)
+            dt = self.clock.tick(30)
             fall_time += dt
-            
-            if self.down == True:
-                # Try moving down
-                if self.can_move(0, 1):
-                    self.figure.move_down()
-                else:
-                    # can't move down → lock piece
-                    self.lock_figure()
-                    self.clear_full_rows()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                    
-                elif event.type == pygame.KEYUP :
-                    if self.down == True:
-                        self.down = False
 
-                elif event.type == pygame.KEYDOWN:
+                # --- Clique sur le bouton "Rejouer" ---
+                elif event.type == pygame.MOUSEBUTTONDOWN and self.game_over:
+                    if self.button_rect.inflate(40, 20).collidepoint(event.pos):
+                        self.reset_game()  # redémarre le jeu
+
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_DOWN:
+                        if self.down:
+                            self.down = False
+
+                elif event.type == pygame.KEYDOWN and not self.game_over:
                     if event.key == pygame.K_LEFT and self.can_move(-1, 0):
                         self.figure.move_left()
-                        
                     elif event.key == pygame.K_RIGHT and self.can_move(1, 0):
                         self.figure.move_right()
-                        
                     elif event.key == pygame.K_DOWN:
                         self.down = True
-                            
                     elif event.key == pygame.K_UP:
                         new_shape = self.figure.rotated_shape()
                         can_rotate = True
@@ -159,17 +184,27 @@ class Game:
                         if can_rotate:
                             self.figure.apply_rotation(new_shape)
 
-            if fall_time > fall_speed:
-                fall_time = 0
-                if self.can_move(0, 1):
-                    self.figure.move_down()
-                else:
-                    self.lock_figure()
-                    self.clear_full_rows()
+            # auto fall
+            if not self.game_over:
+                if fall_time > fall_speed:
+                    fall_time = 0
+                    if self.can_move(0, 1):
+                        self.figure.move_down()
+                    else:
+                        self.lock_figure()
+                        self.clear_full_rows()
 
+                if self.down:
+                    if self.can_move(0, 1):
+                        self.figure.move_down()
+                    else:
+                        self.lock_figure()
+                        self.clear_full_rows()
 
             temp_grid = [row[:] for row in self.grid]
-            self.figure.draw(temp_grid)
+            if not self.game_over:
+                self.figure.draw(temp_grid)
+
             self.draw_grid(temp_grid)
             pygame.display.flip()
 
