@@ -156,7 +156,7 @@ def run():
         if fall_time > fall_speed:
             fall_time = 0
             if can_move(0, 1):
-                #figure.move_down()
+                figure.move_down()
                 None
             else:
                 lock_figure()
