@@ -34,8 +34,8 @@ class Figure:
     def move_right(self):
         self.x += 1
 
-    def move_down(self):
-        self.y += 1
+    def move_down(self,mouv):
+        self.y += mouv
 
     def rotated_shape(self):
         if self.width >= 2 or self.height >= 2:
@@ -56,6 +56,7 @@ class Game:
         self.cell_size = cell_size
         self.width = cols * cell_size + 40
         self.height = rows * cell_size + 80
+        self.mouvement = 1
 
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tetris – manual movement + lock test")
@@ -110,9 +111,8 @@ class Game:
 
         # New figure
         new_figure = Figure()
-
         self.down = False
-        
+
         # if colision at the start = game over
         for cx, cy in new_figure.shape:
             px = new_figure.x + cx
@@ -144,6 +144,14 @@ class Game:
             new_grid.insert(0, [0 for _ in range(self.cols)])
 
         self.grid = new_grid
+        
+    def inverse(self):
+        self.mouvement= - self.mouvement
+        
+        if self.figure.y == 0:
+            self.figure.y = 15
+        else:
+            self.figure.y = 0
 
     def run(self):
         fall_time = 0
@@ -170,10 +178,13 @@ class Game:
                 elif event.type == pygame.KEYDOWN and not self.game_over:
                     if event.key == pygame.K_LEFT and self.can_move(-1, 0):
                         self.figure.move_left()
+                        
                     elif event.key == pygame.K_RIGHT and self.can_move(1, 0):
                         self.figure.move_right()
+                        
                     elif event.key == pygame.K_DOWN:
                         self.down = True
+                        
                     elif event.key == pygame.K_UP:
                         new_shape = self.figure.rotated_shape()
                         can_rotate = True
@@ -185,20 +196,23 @@ class Game:
                                 break
                         if can_rotate:
                             self.figure.apply_rotation(new_shape)
+                            
+                    elif event.key == pygame.K_l:
+                        self.inverse()
 
             # auto fall
             if not self.game_over:
                 if fall_time > fall_speed:
                     fall_time = 0
-                    if self.can_move(0, 1):
-                        self.figure.move_down()
+                    if self.can_move(0, self.mouvement):
+                        self.figure.move_down(self.mouvement)
                     else:
                         self.lock_figure()
                         self.clear_full_rows()
 
                 if self.down:
-                    if self.can_move(0, 1):
-                        self.figure.move_down()
+                    if self.can_move(0, self.mouvement):
+                        self.figure.move_down(self.mouvement)
                     else:
                         self.lock_figure()
                         self.clear_full_rows()
@@ -216,8 +230,3 @@ class Game:
 if __name__ == "__main__":
     Game().run()
 
-
-
-
-if __name__ == "__main__":
-    run()
