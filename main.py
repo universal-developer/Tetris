@@ -111,6 +111,8 @@ class Game:
         # New figure
         new_figure = Figure()
 
+        self.down = False
+        
         # if colision at the start = game over
         for cx, cy in new_figure.shape:
             px = new_figure.x + cx
