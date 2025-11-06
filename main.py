@@ -1,7 +1,6 @@
 import pygame
 import random
 
-
 # --- Define all Tetris shapes ---
 SHAPES = [
     [(0, 0), (1, 0), (2, 0), (3, 0)],           # I
@@ -13,15 +12,14 @@ SHAPES = [
     [(0, 0), (1, 0), (1, 1), (2, 1)],           # Z
 ]
 
-######################class objet########################################
 
-class Figure: 
+class Figure:
     def __init__(self):
-        self.shape = random.choice(SHAPES) #choisi une forme au hasard
-        self.width = max(self.shape, key=lambda x: x[0])[0] #longueur de la forme
-        self.height = max(self.shape, key=lambda x: x[1])[1] #hauteur de la forme
-        self.x = 3 #position de depart en x
-        self.y = 0 #position de depart en y
+        self.shape = random.choice(SHAPES)
+        self.width = max(self.shape, key=lambda x: x[0])[0]
+        self.height = max(self.shape, key=lambda x: x[1])[1]
+        self.x = 3
+        self.y = 0
 
     def draw(self, board, value=1):
         for cx, cy in self.shape:
@@ -45,151 +43,141 @@ class Figure:
             return [(1-cy, cx-1) for cx, cy in self.shape ]
         else:
             return self.shape
-        
 
     def apply_rotation(self, new_shape):
         self.shape = new_shape
         self.width, self.height = self.height, self.width
 
-############################# fonction ######################################
 
-def draw_grid(grid): #redecine la grille de jeu a chaque etape
-    for r in range(rows):
-        for c in range(cols):
-            value = grid[r][c]
-            color = (255, 255, 255) if value else (0, 0, 0)
-            rect = pygame.Rect(
-                c * cell_size + 20,
-                r * cell_size + 60,
-                cell_size,
-                cell_size,
-            )
-            pygame.draw.rect(screen, color, rect)
-            pygame.draw.rect(screen, (100, 100, 100), rect, 1)
+class Game:
+    def __init__(self, rows=20, cols=10, cell_size=30):
+        pygame.init()
+        self.rows = rows
+        self.cols = cols
+        self.cell_size = cell_size
+        self.width = cols * cell_size + 40
+        self.height = rows * cell_size + 80
 
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption("Tetris – manual movement + lock test")
 
-def lock_figure(): #rend la figure immobile + crée une nouvelle figure
-    global figure,down
-    for cx, cy in figure.shape:
-        px = figure.x + cx
-        py = figure.y + cy
-        if 0 <= px < cols and 0 <= py < rows:
-            grid[py][px] = 1
-    down=False
-    figure = Figure()
+        self.grid = [[0 for _ in range(cols)] for _ in range(rows)]
+        self.figure = Figure()
+        self.running = True
+        self.down = False
 
+    def draw_grid(self, grid):
+        for r in range(self.rows):
+            for c in range(self.cols):
+                value = grid[r][c]
+                color = (255, 255, 255) if value else (0, 0, 0)
+                rect = pygame.Rect(
+                    c * self.cell_size + 20,
+                    r * self.cell_size + 60,
+                    self.cell_size,
+                    self.cell_size,
+                )
+                pygame.draw.rect(self.screen, color, rect)
+                pygame.draw.rect(self.screen, (100, 100, 100), rect, 1)
 
-def can_move( dx, dy): #test si la figure peux ce deplacer une position
-    for cx, cy in figure.shape:
-        px = figure.x + cx + dx
-        py = figure.y + cy + dy
-        if px < 0 or px >= cols or py < 0 or py >= rows or grid[py][px] == 1:
-            return False
-    return True
+    def lock_figure(self):
+        for cx, cy in self.figure.shape:
+            px = self.figure.x + cx
+            py = self.figure.y + cy
+            if 0 <= px < self.cols and 0 <= py < self.rows:
+                self.grid[py][px] = 1
+        self.figure = Figure()
+
+    def can_move(self, dx, dy):
+        for cx, cy in self.figure.shape:
+            px = self.figure.x + cx + dx
+            py = self.figure.y + cy + dy
+            if px < 0 or px >= self.cols or py < 0 or py >= self.rows or self.grid[py][px] == 1:
+                return False
+        return True
     
-
-def clear_full_rows():
-    global grid
-    new_grid = []
-    lines_cleared = 0
+    def clear_full_rows(self):
+        new_grid = []
+        lines_cleared = 0
         
-    for row in grid:
-        if any(cell == 0 for cell in row):
-            new_grid.append(row)
-        else: 
-            lines_cleared += 1
+        for row in self.grid:
+            if any(cell == 0 for cell in row):
+                new_grid.append(row)
+            else: 
+                lines_cleared += 1
                 
-    for _ in range(lines_cleared):
-        new_grid.insert(0, [0 for _ in range(cols)])
+        for _ in range(lines_cleared):
+            new_grid.insert(0, [0 for _ in range(self.cols)])
 
-    grid = new_grid
+        self.grid = new_grid
 
+    def run(self):
+        clock = pygame.time.Clock()
+        fall_time = 0
+        fall_speed = 300  # milliseconds per step
 
-def run():
-    global running, down
-    clock = pygame.time.Clock()
-    fall_time = 0
-    fall_speed = 300  # milliseconds per step
+        while self.running:
+            dt = clock.tick(30)
+            fall_time += dt
+            
+            if self.down == True:
+                # Try moving down
+                if self.can_move(0, 1):
+                    self.figure.move_down()
+                else:
+                    # can't move down → lock piece
+                    self.lock_figure()
+                    self.clear_full_rows()
 
-    while running:
-        dt = clock.tick(30)
-        fall_time += dt
-        
-        if down == True:
-            # Try moving down
-            if can_move(0, 1):
-                figure.move_down()
-            else:
-                # can't move down → lock piece
-                lock_figure()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                
-            elif event.type == pygame.KEYUP :
-                if down == True:
-                    down = False
-
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and can_move(-1, 0):
-                    figure.move_left()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
                     
-                elif event.key == pygame.K_RIGHT and can_move(1, 0):
-                    figure.move_right()
-                    
-                elif event.key == pygame.K_DOWN:
-                    down = True
+                elif event.type == pygame.KEYUP :
+                    if self.down == True:
+                        self.down = False
+
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT and self.can_move(-1, 0):
+                        self.figure.move_left()
                         
-                elif event.key == pygame.K_UP:
-                    new_shape = figure.rotated_shape()
-                    can_rotate = True
-                    for cx, cy in new_shape:
-                        px = figure.x + cx
-                        py = figure.y + cy
-                        if px < 0 or px >= cols or py < 0 or py >= rows or grid[py][px] == 1:
-                            can_rotate = False
-                            break
-                    if can_rotate:
-                        figure.apply_rotation(new_shape)
+                    elif event.key == pygame.K_RIGHT and self.can_move(1, 0):
+                        self.figure.move_right()
+                        
+                    elif event.key == pygame.K_DOWN:
+                        self.down = True
+                            
+                    elif event.key == pygame.K_UP:
+                        new_shape = self.figure.rotated_shape()
+                        can_rotate = True
+                        for cx, cy in new_shape:
+                            px = self.figure.x + cx
+                            py = self.figure.y + cy
+                            if px < 0 or px >= self.cols or py < 0 or py >= self.rows or self.grid[py][px] == 1:
+                                can_rotate = False
+                                break
+                        if can_rotate:
+                            self.figure.apply_rotation(new_shape)
 
-        if fall_time > fall_speed:
-            fall_time = 0
-            if can_move(0, 1):
-                figure.move_down()
-                None
-            else:
-                lock_figure()
-                clear_full_rows()
-
-        temp_grid = [row[:] for row in grid]
-        figure.draw(temp_grid)
-        draw_grid(temp_grid)
-        pygame.display.flip()
-
-    pygame.quit()
-
-############################# main code #####################################
+            if fall_time > fall_speed:
+                fall_time = 0
+                if self.can_move(0, 1):
+                    self.figure.move_down()
+                else:
+                    self.lock_figure()
+                    self.clear_full_rows()
 
 
+            temp_grid = [row[:] for row in self.grid]
+            self.figure.draw(temp_grid)
+            self.draw_grid(temp_grid)
+            pygame.display.flip()
 
-pygame.init()
-rows = 20
-cols = 10
-cell_size = 30
-width = cols * cell_size + 40
-height = rows * cell_size + 80
-
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Tetris – manual movement + lock test")
-
-grid = [[0 for _ in range(cols)] for _ in range(rows)]
-figure = Figure()
-running = True
-down=False
+        pygame.quit()
 
 
-
+if __name__ == "__main__":
+    Game().run()
 
 
 
