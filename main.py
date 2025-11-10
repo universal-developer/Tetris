@@ -19,7 +19,7 @@ class Figure:
         self.width = max(self.shape, key=lambda x: x[0])[0]
         self.height = max(self.shape, key=lambda x: x[1])[1]
         self.x = 3
-        self.y = 0
+        self.y = 18
 
     def draw(self, board, value=1):
         for cx, cy in self.shape:
@@ -56,7 +56,7 @@ class Game:
         self.cell_size = cell_size
         self.width = cols * cell_size + 40
         self.height = rows * cell_size + 80
-        self.mouvement = 1
+        self.mouvement = -1
 
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tetris – manual movement + lock test")
@@ -134,14 +134,15 @@ class Game:
     def clear_full_rows(self):
         new_grid = []
         lines_cleared = 0
-        for row in self.grid:
+        for row in self.grid[::self.mouvement]:
             if any(cell == 0 for cell in row):
-                new_grid.append(row)
+                pos_insert=int(-0.5-self.mouvement*0.5)
+                new_grid.insert(pos_insert,row)
             else:
                 lines_cleared += 1
 
         for _ in range(lines_cleared):
-            new_grid.insert(0, [0 for _ in range(self.cols)])
+            new_grid.insert(self.mouvement, [0 for _ in range(self.cols)])
 
         self.grid = new_grid
         
@@ -229,4 +230,3 @@ class Game:
 
 if __name__ == "__main__":
     Game().run()
-
