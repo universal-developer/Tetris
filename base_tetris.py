@@ -14,11 +14,11 @@ SHAPES = [
 
 
 class Figure:
-    def __init__(self, start_y):
+    def __init__(self, start_y, cols=10):
         self.shape = random.choice(SHAPES)
         self.width = max(self.shape, key=lambda x: x[0])[0]
         self.height = max(self.shape, key=lambda x: x[1])[1]
-        self.x = 3
+        self.x = (cols - (self.width + 1)) // 2  # Dynamically centered
         self.y = start_y
 
     def draw(self, board, value=1):
@@ -72,7 +72,9 @@ class BaseTetris:
 
         # Continuous dark top bar for both score and controls
         pygame.draw.rect(self.screen, (25, 25, 25), (0, 0, self.width, self.top_margin))
-        pygame.draw.line(self.screen, (80, 80, 80), (0, self.top_margin), (self.width, self.top_margin), 1)
+        pygame.draw.line(
+            self.screen, (80, 80, 80), (0, self.top_margin), (self.width, self.top_margin), 1
+        )
 
         # Draw playfield grid
         for r in range(self.rows):
@@ -109,8 +111,8 @@ class BaseTetris:
         w_1, h_1 = font_small.size(controls_1line)
 
         controls_2lines = [
-            "←/→ Déplacer   ↓ Drop",
-            "↑ Tourner   ESC Pause",
+            "←/→ Déplacer   ↓ Descendre",
+            "↑ Tourner   ÉCH Pause",
         ]
         w_2 = max(
             font_small.size(controls_2lines[0])[0],
@@ -168,7 +170,7 @@ class BaseTetris:
                 self.grid[py][px] = 1
 
         start_y = 0 if self.gravity == 1 else 18
-        new_figure = Figure(start_y)
+        new_figure = Figure(start_y, cols=self.cols)
 
         for cx, cy in new_figure.shape:
             px = new_figure.x + cx
@@ -181,7 +183,7 @@ class BaseTetris:
 
     def reset_game(self):
         self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
-        self.figure = Figure(start_y=0 if self.gravity == 1 else 18)
+        self.figure = Figure(start_y=0 if self.gravity == 1 else 18, cols=self.cols)
         self.score = 0
         self.down = False
         self.game_over = False
