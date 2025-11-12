@@ -105,12 +105,12 @@ class BaseTetris:
         score_right = score_pos[0] + score_surf.get_width()
 
         # --- Controls text (right) ---
-        controls_1line = "←/→ Move   ↓ Drop   ↑ Rotate   ESC Pause"
+        controls_1line = "←/→ Déplacer   ↓ Descendre   ↑ Tourner   ÉCH Pause"
         w_1, h_1 = font_small.size(controls_1line)
 
         controls_2lines = [
-            "←/→ Move   ↓ Drop",
-            "↑ Rotate   ESC Pause",
+            "←/→ Déplacer   ↓ Descendre",
+            "↑ Tourner   ESC Pause",
         ]
         w_2 = max(
             font_small.size(controls_2lines[0])[0],
