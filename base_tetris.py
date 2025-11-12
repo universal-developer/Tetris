@@ -64,7 +64,6 @@ class BaseTetris:
         
         self.reset_game()
 
-
     def draw_grid(self, grid):
         # 🟢 Clear the entire screen first
         self.screen.fill((0, 0, 0))
