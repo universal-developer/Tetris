@@ -20,6 +20,7 @@ class Figure:
         self.height = max(self.shape, key=lambda x: x[1])[1]
         self.x = 3
         self.y = start_y
+        
 
     def draw(self, board, value=1):
         for cx, cy in self.shape:
@@ -60,6 +61,9 @@ class BaseTetris:
         self.running = True
         self.grid = [[0 for _ in range(cols)] for _ in range(rows)]
         self.score = 0  # 🟢 new line
+        
+        self.reset_game()
+
 
     def draw_grid(self, grid):
         # 🟢 Clear the entire screen first
@@ -84,8 +88,6 @@ class BaseTetris:
         text = font.render(f"Score: {self.score}", True, (255, 255, 255))
         self.screen.blit(text, (20, 20))
 
-
-
     def can_move(self, figure, dx, dy):
         for cx, cy in figure.shape:
             px = figure.x + cx + dx
@@ -95,12 +97,38 @@ class BaseTetris:
         return True
 
     def lock_figure(self, figure):
+        # Lock the current piece into the grid
         for cx, cy in figure.shape:
             px = figure.x + cx
             py = figure.y + cy
             if 0 <= px < self.cols and 0 <= py < self.rows:
                 self.grid[py][px] = 1
 
-        # spawn new piece after locking
+        # Spawn new piece
         start_y = 0 if self.gravity == 1 else 18
-        self.figure = Figure(start_y)
+        new_figure = Figure(start_y)
+
+        # Check for game over — collision right after spawning
+        for cx, cy in new_figure.shape:
+            px = new_figure.x + cx
+            py = new_figure.y + cy
+            if self.grid[py][px] == 1:
+                self.game_over = True
+                return  # stop here, don’t spawn new piece
+
+        # If all good, continue
+        self.figure = new_figure
+
+        
+    def reset_game(self):
+      self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
+      self.figure = Figure(start_y=0 if self.gravity == 1 else 18)
+      self.score = 0
+      self.down = False
+      self.game_over = False
+
+      # reuse same button elements
+      self.font = pygame.font.SysFont("arial", 30)
+      self.button_text = self.font.render("Rejouer", True, (255, 255, 255))
+      self.button_rect = self.button_text.get_rect(center=(self.width // 2, self.height // 2 + 60))
+
