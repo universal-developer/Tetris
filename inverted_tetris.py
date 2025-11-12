@@ -15,24 +15,30 @@ class Game(BaseTetris):
         self.quit_rect = None
 
     def clear_full_rows(self):
-        # Removes all full rows from the grid and increases the score
+        # Create a new grid and count cleared lines
         new_grid = []
         lines_cleared = 0
 
-        # Keep rows that are not full, count those that are
+        # Keep rows that are not full, count the full ones
         for row in self.grid:
             if any(cell == 0 for cell in row):
                 new_grid.append(row)
             else:
                 lines_cleared += 1
 
-        # Add empty rows at the top for every cleared line
-        for _ in range(lines_cleared):
-            new_grid.insert(0, [0 for _ in range(self.cols)])
+        # For normal gravity (falling down), insert empty rows at the top
+        # For inverse gravity (falling up), append empty rows at the bottom
+        if self.gravity == 1:
+            for _ in range(lines_cleared):
+                new_grid.insert(0, [0 for _ in range(self.cols)])
+        else:  # gravity == -1
+            for _ in range(lines_cleared):
+                new_grid.append([0 for _ in range(self.cols)])
 
-        # Update the grid and score
+        # Update the grid and increase the score
         self.grid = new_grid
         self.score += lines_cleared * 100
+
 
     def toggle_pause(self):
         self.paused = not self.paused
