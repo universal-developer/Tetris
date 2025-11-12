@@ -1,0 +1,14 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Python files
+*.py text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.mp3 binary
+*.ogg binary
+*.mp4 binary
+*.ttf binary
+*.otf binary
