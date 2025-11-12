@@ -3,13 +3,13 @@ import random
 
 # --- Define all Tetris shapes ---
 SHAPES = [
-    [(0, 0), (1, 0), (2, 0), (3, 0)],           # I
-    [(0, 0), (1, 0), (0, 1), (1, 1)],           # O
-    [(0, 0), (1, 0), (2, 0), (2, 1)],           # L
-    [(0, 0), (1, 0), (2, 0), (0, 1)],           # J
-    [(0, 0), (1, 0), (2, 0), (1, 1)],           # T
-    [(1, 0), (2, 0), (0, 1), (1, 1)],           # S
-    [(0, 0), (1, 0), (1, 1), (2, 1)],           # Z
+    [(0, 0), (1, 0), (2, 0), (3, 0)],  # I
+    [(0, 0), (1, 0), (0, 1), (1, 1)],  # O
+    [(0, 0), (1, 0), (2, 0), (2, 1)],  # L
+    [(0, 0), (1, 0), (2, 0), (0, 1)],  # J
+    [(0, 0), (1, 0), (2, 0), (1, 1)],  # T
+    [(1, 0), (2, 0), (0, 1), (1, 1)],  # S
+    [(0, 0), (1, 0), (1, 1), (2, 1)],  # Z
 ]
 
 
@@ -20,7 +20,6 @@ class Figure:
         self.height = max(self.shape, key=lambda x: x[1])[1]
         self.x = 3
         self.y = start_y
-        
 
     def draw(self, board, value=1):
         for cx, cy in self.shape:
@@ -39,7 +38,6 @@ class Figure:
         self.y += mouv
 
     def rotated_shape(self):
-        # exact same rotation logic as before
         return [(-cy + 1, cx) for cx, cy in self.shape]
 
     def apply_rotation(self, new_shape):
@@ -53,81 +51,143 @@ class BaseTetris:
         self.rows = rows
         self.cols = cols
         self.cell_size = cell_size
-        self.width = cols * cell_size + 40
-        self.height = rows * cell_size + 80
         self.gravity = gravity
+
+        # unified top bar space
+        self.top_margin = 56
+        self.width = cols * cell_size + 40
+        self.height = rows * cell_size + 80 + self.top_margin
+
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.clock = pygame.time.Clock()
         self.running = True
+
         self.grid = [[0 for _ in range(cols)] for _ in range(rows)]
-        self.score = 0  # 🟢 new line
-        
+        self.score = 0
         self.reset_game()
 
     def draw_grid(self, grid):
-        # 🟢 Clear the entire screen first
+        """Draw playfield + top info bar."""
         self.screen.fill((0, 0, 0))
 
-        # Draw cells
+        # Continuous dark top bar for both score and controls
+        pygame.draw.rect(self.screen, (25, 25, 25), (0, 0, self.width, self.top_margin))
+        pygame.draw.line(self.screen, (80, 80, 80), (0, self.top_margin), (self.width, self.top_margin), 1)
+
+        # Draw playfield grid
         for r in range(self.rows):
             for c in range(self.cols):
                 val = grid[r][c]
                 color = (255, 255, 255) if val else (0, 0, 0)
                 rect = pygame.Rect(
                     c * self.cell_size + 20,
-                    r * self.cell_size + 60,
+                    r * self.cell_size + 60 + self.top_margin,
                     self.cell_size,
                     self.cell_size,
                 )
                 pygame.draw.rect(self.screen, color, rect)
                 pygame.draw.rect(self.screen, (100, 100, 100), rect, 1)
 
-        # 🟢 Draw the score freshly each frame
-        font = pygame.font.SysFont("arial", 24)
-        text = font.render(f"Score: {self.score}", True, (255, 255, 255))
-        self.screen.blit(text, (20, 20))
+        # Draw top bar info
+        self.draw_ui()
+
+    def draw_ui(self):
+        """Score on the left; controls on the right.
+        Auto-wrap controls to a second line if there's not enough room.
+        Ensures no overlap with the score."""
+        font_bold = pygame.font.SysFont("arial", 24, bold=True)
+        font_small = pygame.font.SysFont("arial", 18)
+
+        # --- Score (left) ---
+        score_surf = font_bold.render(f"Score: {self.score}", True, (255, 255, 255))
+        score_pos = (20, 12)
+        self.screen.blit(score_surf, score_pos)
+        score_right = score_pos[0] + score_surf.get_width()
+
+        # --- Controls text (right) ---
+        controls_1line = "←/→ Move   ↓ Drop   ↑ Rotate   ESC Pause"
+        w_1, h_1 = font_small.size(controls_1line)
+
+        controls_2lines = [
+            "←/→ Move   ↓ Drop",
+            "↑ Rotate   ESC Pause",
+        ]
+        w_2 = max(
+            font_small.size(controls_2lines[0])[0],
+            font_small.size(controls_2lines[1])[0],
+        )
+        h_2_total = font_small.get_height() * 2 + 4
+
+        left_limit = score_right + 30
+        right_padding = 20
+        available_width = self.width - right_padding - left_limit
+
+        if w_1 <= available_width:
+            # One-line layout
+            x = self.width - right_padding - w_1
+            if x < left_limit:
+                x = left_limit
+            self.screen.blit(
+                font_small.render(controls_1line, True, (255, 255, 255)),
+                (x, 16),
+            )
+        else:
+            # Two-line layout (stacked neatly)
+            x = self.width - right_padding - w_2
+            if x < left_limit:
+                x = left_limit
+            y_top = 8
+            self.screen.blit(
+                font_small.render(controls_2lines[0], True, (255, 255, 255)),
+                (x, y_top),
+            )
+            self.screen.blit(
+                font_small.render(controls_2lines[1], True, (255, 255, 255)),
+                (x, y_top + font_small.get_height() + 4),
+            )
 
     def can_move(self, figure, dx, dy):
         for cx, cy in figure.shape:
             px = figure.x + cx + dx
             py = figure.y + cy + dy
-            if px < 0 or px >= self.cols or py < 0 or py >= self.rows or self.grid[py][px] == 1:
+            if (
+                px < 0
+                or px >= self.cols
+                or py < 0
+                or py >= self.rows
+                or self.grid[py][px] == 1
+            ):
                 return False
         return True
 
     def lock_figure(self, figure):
-        # Lock the current piece into the grid
         for cx, cy in figure.shape:
             px = figure.x + cx
             py = figure.y + cy
             if 0 <= px < self.cols and 0 <= py < self.rows:
                 self.grid[py][px] = 1
 
-        # Spawn new piece
         start_y = 0 if self.gravity == 1 else 18
         new_figure = Figure(start_y)
 
-        # Check for game over — collision right after spawning
         for cx, cy in new_figure.shape:
             px = new_figure.x + cx
             py = new_figure.y + cy
             if self.grid[py][px] == 1:
                 self.game_over = True
-                return  # stop here, don’t spawn new piece
+                return
 
-        # If all good, continue
         self.figure = new_figure
 
-        
     def reset_game(self):
-      self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
-      self.figure = Figure(start_y=0 if self.gravity == 1 else 18)
-      self.score = 0
-      self.down = False
-      self.game_over = False
+        self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
+        self.figure = Figure(start_y=0 if self.gravity == 1 else 18)
+        self.score = 0
+        self.down = False
+        self.game_over = False
 
-      # reuse same button elements
-      self.font = pygame.font.SysFont("arial", 30)
-      self.button_text = self.font.render("Rejouer", True, (255, 255, 255))
-      self.button_rect = self.button_text.get_rect(center=(self.width // 2, self.height // 2 + 60))
-
+        self.font = pygame.font.SysFont("arial", 30)
+        self.button_text = self.font.render("Rejouer", True, (255, 255, 255))
+        self.button_rect = self.button_text.get_rect(
+            center=(self.width // 2, self.height // 2 + 60)
+        )

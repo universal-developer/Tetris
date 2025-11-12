@@ -143,6 +143,7 @@ class Game(BaseTetris):
                 pygame.draw.rect(self.screen, (255, 255, 255), self.button_rect.inflate(40, 20), 2)
                 self.screen.blit(self.button_text, self.button_rect)
 
+            self.draw_ui()
             pygame.display.flip()
 
         # Important: don’t call pygame.quit() here — so main menu stays open
