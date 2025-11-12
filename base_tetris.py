@@ -109,7 +109,7 @@ class BaseTetris:
         w_1, h_1 = font_small.size(controls_1line)
 
         controls_2lines = [
-            "←/→ Déplacer   ↓ Descendre",
+            "←/→ Déplacer   ↓ Drop",
             "↑ Tourner   ESC Pause",
         ]
         w_2 = max(
