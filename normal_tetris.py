@@ -2,7 +2,7 @@ from base_tetris import BaseTetris, Figure
 import pygame
 
 class Game(BaseTetris):
-    def __init__(self, rows=20, cols=10, cell_size=30):
+    def __init__(self,inversion , rows=20, cols=10, cell_size=30):
         super().__init__(rows, cols, cell_size, gravity=1)
         pygame.display.set_caption("Tetris – Normal")
         self.paused = False
@@ -12,6 +12,7 @@ class Game(BaseTetris):
 
         self.resume_rect = None
         self.quit_rect = None
+        self.inversion=inversion
 
     def clear_full_rows(self):
         new_grid = []
@@ -148,3 +149,4 @@ class Game(BaseTetris):
 
         # Important: don’t call pygame.quit() here — so main menu stays open
         return
+
