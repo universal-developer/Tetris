@@ -192,12 +192,12 @@ class BaseTetris:
     def reset_game(self):
         self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
 
-        # ✔️ reset file FIFO BEFORE spawning
+        # reset file FIFO BEFORE spawning
         self.piece_queue = []
         for _ in range(3):
             self.piece_queue.append(Figure(start_y=0 if self.gravity == 1 else 18, cols=self.cols))
 
-        # ✔️ now take the first piece from the fresh queue
+        # now take the first piece from the fresh queue
         self.figure = self.get_next_figure()
 
         self.score = 0
