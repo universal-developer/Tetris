@@ -3,6 +3,7 @@ import pygame_menu
 from normal_tetris import Game as NormalGame
 from inverted_tetris import Game as InvertedGame
 
+
 def start_normal():
     NormalGame().run()
 

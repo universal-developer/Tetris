@@ -112,12 +112,12 @@ class BaseTetris:
         score_right = score_pos[0] + score_surf.get_width()
 
         # --- Controls text (right) ---
-        controls_1line = "←/→ Déplacer   ↓ Descendre   ↑ Tourner   ÉCH Pause"
+        controls_1line = "←/→ Déplacer   ↓ Descendre   ↑ Tourner   ÉSC Pause"
         w_1, h_1 = font_small.size(controls_1line)
 
         controls_2lines = [
             "←/→ Déplacer   ↓ Descendre",
-            "↑ Tourner   ÉCH Pause",
+            "↑ Tourner   ÉSC Pause",
         ]
         w_2 = max(
             font_small.size(controls_2lines[0])[0],
@@ -209,8 +209,6 @@ class BaseTetris:
         self.button_rect = self.button_text.get_rect(
             center=(self.width // 2, self.height // 2 + 60)
         )
-
-
 
     def get_next_figure(self):
         # FIFO → remove from front
