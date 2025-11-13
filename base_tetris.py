@@ -20,6 +20,7 @@ class Figure:
         self.height = max(self.shape, key=lambda x: x[1])[1]
         self.x = (cols - (self.width + 1)) // 2  # Dynamically centered
         self.y = start_y
+        
 
     def draw(self, board, value=1):
         for cx, cy in self.shape:
@@ -52,6 +53,8 @@ class BaseTetris:
         self.cols = cols
         self.cell_size = cell_size
         self.gravity = gravity
+        self.normal_inverse = 0
+        self.inverse = 1
 
         # unified top bar space
         self.top_margin = 56
@@ -83,7 +86,7 @@ class BaseTetris:
                 color = (255, 255, 255) if val else (0, 0, 0)
                 rect = pygame.Rect(
                     c * self.cell_size + 20,
-                    r * self.cell_size + 60 + self.top_margin,
+                    self.normal_inverse + (r * self.cell_size + 60 + self.top_margin)*self.inverse,
                     self.cell_size,
                     self.cell_size,
                 )
@@ -180,6 +183,14 @@ class BaseTetris:
                 return
 
         self.figure = new_figure
+        if self.inversion is True and random.randint(0,100)<50:
+            if self.normal_inverse == 0:
+                self.normal_inverse = 800
+                self.inverse = -1
+            else:
+                self.normal_inverse = 0
+                self.inverse = 1
+
 
     def reset_game(self):
         self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
@@ -193,3 +204,4 @@ class BaseTetris:
         self.button_rect = self.button_text.get_rect(
             center=(self.width // 2, self.height // 2 + 60)
         )
+
