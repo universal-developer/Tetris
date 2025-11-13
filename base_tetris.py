@@ -66,6 +66,11 @@ class BaseTetris:
         self.score = 0
         self.reset_game()
 
+        self.piece_queue = []
+        for _ in range(3):
+            self.piece_queue.append(Figure(start_y=0 if gravity == 1 else 18, cols=cols))
+
+
     def draw_grid(self, grid):
         """Draw playfield + top info bar."""
         self.screen.fill((0, 0, 0))
@@ -163,27 +168,38 @@ class BaseTetris:
         return True
 
     def lock_figure(self, figure):
+        # Lock the current figure into the grid
         for cx, cy in figure.shape:
             px = figure.x + cx
             py = figure.y + cy
             if 0 <= px < self.cols and 0 <= py < self.rows:
                 self.grid[py][px] = 1
 
-        start_y = 0 if self.gravity == 1 else 18
-        new_figure = Figure(start_y, cols=self.cols)
+        # Get the next figure from FIFO
+        next_figure = self.get_next_figure()
 
-        for cx, cy in new_figure.shape:
-            px = new_figure.x + cx
-            py = new_figure.y + cy
+        # Check collision for game over
+        for cx, cy in next_figure.shape:
+            px = next_figure.x + cx
+            py = next_figure.y + cy
             if self.grid[py][px] == 1:
                 self.game_over = True
                 return
 
-        self.figure = new_figure
+        # Set the next figure
+        self.figure = next_figure
 
     def reset_game(self):
         self.grid = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
-        self.figure = Figure(start_y=0 if self.gravity == 1 else 18, cols=self.cols)
+
+        # ✔️ reset file FIFO BEFORE spawning
+        self.piece_queue = []
+        for _ in range(3):
+            self.piece_queue.append(Figure(start_y=0 if self.gravity == 1 else 18, cols=self.cols))
+
+        # ✔️ now take the first piece from the fresh queue
+        self.figure = self.get_next_figure()
+
         self.score = 0
         self.down = False
         self.game_over = False
@@ -193,3 +209,27 @@ class BaseTetris:
         self.button_rect = self.button_text.get_rect(
             center=(self.width // 2, self.height // 2 + 60)
         )
+
+
+
+    def get_next_figure(self):
+        # FIFO → remove from front
+        next_figure = self.piece_queue[0]
+        del self.piece_queue[0]
+
+        # Generate a new figure and add to the end
+        start_y = 0 if self.gravity == 1 else 18
+        new_piece = Figure(start_y, cols=self.cols)
+
+        # Prevent 3 identical shapes
+        if len(self.piece_queue) >= 2:
+            if (self.piece_queue[-1].shape == new_piece.shape and
+                self.piece_queue[-2].shape == new_piece.shape):
+                # Force a new different one
+                while new_piece.shape == self.piece_queue[-1].shape:
+                    new_piece = Figure(start_y, cols=self.cols)
+
+        self.piece_queue.append(new_piece)
+
+        return next_figure
+
