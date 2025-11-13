@@ -14,6 +14,8 @@ class Game(BaseTetris):
         self.resume_rect = None
         self.quit_rect = None
 
+        self.inversion = False
+
     def clear_full_rows(self):
         # Create a new grid and count cleared lines
         new_grid = []
